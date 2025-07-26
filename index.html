@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VaultNote 🔐</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      /* Light Theme */
+      --bg: #f1f8f9;
+      --text: #102a43;
+      --accent: #3f51b5;
+      --accent-light: #7986cb;
+      --secondary: #3f51b5 --card-bg: #ffffffcc;
+      --input-bg: #ffffff99;
+      --placeholder: #607d8b;
+    }
+
+    body.dark {
+      /* Dark Theme */
+      --bg: #0d1b2a;
+      --text: #e0f7fa;
+      --accent: #00e5ff;
+      --accent-light: #18ffff;
+      --secondary: #00acc1;
+      --card-bg: #ffffff0a;
+      --input-bg: #ffffff10;
+      --placeholder: #b0bec5;
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'PT Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    header {
+      text-align: center;
+      padding: 3rem 1rem;
+      background: rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    header h1 {
+      font-size: 3rem;
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent-light);
+    }
+
+    header p {
+      color: var(--accent-light);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 1rem;
+      box-shadow: 0 0 8px var(--accent-light);
+      backdrop-filter: blur(6px);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--placeholder);
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-light), 0 0 20px var(--accent-light) inset;
+    }
+
+    button:hover {
+      background: var(--accent-light);
+      transform: scale(1.04);
+    }
+
+    .note {
+      padding: 1.5rem;
+      border-radius: 16px;
+      background: var(--card-bg);
+      box-shadow: 0 0 12px rgba(0, 255, 255, 0.15);
+      margin-top: 1rem;
+      position: relative;
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .note h3[contenteditable] {
+      border-bottom: 1px dashed var(--accent-light);
+      margin-bottom: 0.5rem;
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    .note .tags {
+      font-size: 0.9rem;
+      color: var(--secondary);
+    }
+
+    .note .icon-btn {
+      background: none;
+      border: none;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 18px;
+      color: #ff5252;
+      cursor: pointer;
+    }
+
+    #darkToggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--secondary);
+      color: #fff;
+      padding: 10px;
+      border-radius: 50%;
+      border: none;
+      font-size: 18px;
+      z-index: 1000;
+      box-shadow: 0 0 12px var(--secondary);
+    }
+
+    .search {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--input-bg);
+      border: none;
+      color: var(--text);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    #about {
+      margin-top: 2rem;
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 12px;
+      color: var(--text);
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.08);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <button id="darkToggle">🌙</button>
+
+  <header>
+    <h1>VaultNote 🔐</h1>
+    <p>Encrypted, Voice-Powered, Public Notes</p>
+  </header>
+
+  <div class="container">
+    <input id="title" placeholder="Note Title" />
+    <textarea id="note" placeholder="Write your note..."></textarea>
+    <input id="tags" placeholder="Tags (comma separated)" />
+    <button onclick="addNote()">💾 Save Note</button>
+    <button onclick="startVoice()">🎤 Voice Input</button>
+    <input id="search" class="search" placeholder="🔍 Search notes..." oninput="loadNotes()" />
+
+    <div id="notes"></div>
+
+    <div id="about">
+      <h2>About VaultNote</h2>
+      <p><strong>VaultNote</strong> is a voice-powered, encrypted <strong>public notes app</strong> built using MongoDB,
+        Node.js, and deployed on Render.</p>
+      <ul>
+        <li>🔐 End-to-end AES encryption for note content</li>
+        <li>🎙️ Speech-to-text voice input</li>
+        <li>🗂️ Tag filtering + search</li>
+        <li>🖋️ In-place editing with auto-save</li>
+        <li>🗑️ Delete instantly</li>
+        <li>🌗 Dark/light mode toggle with preference saved</li>
+        <li>🌍 Everyone can see notes – perfect for announcements or public logs</li>
+      </ul>
+      <p>Made with 💙 by <a href="https://github.com/elvishpatel" target="_blank">Elvish Patel</a></p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    const prefersDark = localStorage.getItem('darkMode') === 'true';
+    if (prefersDark) document.body.classList.add('dark');
+
+    document.getElementById('darkToggle').onclick = () => {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    };
+
+    const API = 'https://vaultnote-backend.onrender.com';
+
+    document.getElementById('darkToggle').onclick = () => {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    };
+
+    async function addNote() {
+      const title = document.getElementById('title').value.trim();
+      const text = document.getElementById('note').value.trim();
+      const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean);
+
+      if (!title || !text) return alert("Title and note are required.");
+
+      await fetch(`${API}/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, text, tags })
+      });
+
+      document.getElementById('title').value = '';
+      document.getElementById('note').value = '';
+      document.getElementById('tags').value = '';
+      loadNotes();
+    }
+
+    async function loadNotes() {
+      const response = await fetch(`${API}/notes`);
+      const notes = await response.json();
+      const container = document.getElementById('notes');
+      container.innerHTML = '';
+
+      notes.forEach(note => {
+        const el = document.createElement('div');
+        el.className = 'note';
+        el.setAttribute('data-id', note.id);
+
+        el.innerHTML = `
+          <h3 contenteditable onblur="updateNote('${note.id}', this.innerText, 'title')">${note.title}</h3>
+          <p contenteditable onblur="updateNote('${note.id}', this.innerText, 'text')">${note.text}</p>
+          <p class="tags" contenteditable onblur="updateNote('${note.id}', this.innerText, 'tags')">#${note.tags.join(', #')}</p>
+          <button class="icon-btn" onclick="deleteNote('${note.id}')">🗑️</button>`;
+
+        el.addEventListener('click', () => {
+          if (note.selfDestruct) {
+            fetch(`${API}/notes/${note.id}`, { method: 'DELETE' })
+              .then(() => el.remove());
+          }
+        });
+
+        container.appendChild(el);
+      });
+    }
+
+    function startVoice() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert("Speech recognition not supported in this browser. Try using Chrome.");
+    return;
+  }
+
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.start();
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById('note').value += ' ' + transcript;
+  };
+
+  recognition.onerror = (e) => {
+    console.error('Voice error:', e.error);
+    alert("Voice input failed. Error: " + e.error);
+  };
+
+  recognition.onspeechend = () => {
+    recognition.stop();
+  };
+}
+
+    function deleteNote(id) {
+      fetch(`${API}/notes/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(() => loadNotes())
+        .catch(console.error);
+    }
+
+    function updateNote(id, _, __) {
+      const el = document.querySelector(`.note[data-id="${id}"]`);
+      const title = el.querySelector('h3').innerText;
+      const text = el.querySelector('p').innerText;
+      const tags = el.querySelector('.tags').innerText.replace(/#/g, '').split(',').map(t => t.trim());
+
+      fetch(`${API}/notes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, text, tags })
+      })
+        .then(res => res.json())
+        .catch(console.error);
+    }
+
+    loadNotes();
+  </script>
+</body>
+
+</html>
